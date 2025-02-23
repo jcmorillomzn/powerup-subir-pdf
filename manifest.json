@@ -1,0 +1,10 @@
+{
+  "name": "Subir PDF",
+  "description": "Power-Up para subir PDF y procesar albaranes",
+  "author": "JC",
+  "version": "1.0.0",
+  "capabilities": [
+    "card-buttons"
+  ]
+}
+Añadido manifest.json
