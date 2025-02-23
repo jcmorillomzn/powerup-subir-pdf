@@ -3,14 +3,59 @@
 <head>
   <meta charset="utf-8">
   <title>Subir PDF</title>
+  <script src="https://p.trellocdn.com/power-up.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+    h2 {
+      color: #FF9F1C;
+      text-align: center;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #FF9F1C;
+      border: none;
+      padding: 12px;
+      color: white;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #e08d15;
+    }
+  </style>
 </head>
 <body>
-  <h2>Subir PDF del albarán</h2>
   <form id="pdfForm">
+    <h2>Subir PDF del albarán</h2>
     <input type="file" id="pdfFile" accept="application/pdf" />
     <button type="submit">Subir</button>
   </form>
-  <script src="https://p.trellocdn.com/power-up.min.js"></script>
   <script>
     document.getElementById('pdfForm').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -19,8 +64,7 @@
         alert('Por favor, selecciona un archivo PDF.');
         return;
       }
-      // Aquí se integrará la lógica para enviar el PDF a tu endpoint.
-      // Por ahora, simplemente cerramos el modal con un mensaje.
+      // Aquí más adelante podrás añadir la lógica para enviar el PDF a tu endpoint.
       TrelloPowerUp.iframe().closeModal('¡PDF subido correctamente!');
     });
   </script>
