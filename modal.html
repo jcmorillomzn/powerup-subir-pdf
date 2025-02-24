@@ -7,9 +7,9 @@
   <style>
     :root {
       --main-bg: linear-gradient(135deg, #f5af19, #f12711);
-      --card-bg: rgba(255, 255, 255, 0.85);
-      --text-color: #333;
-      --primary-color: #FF9F1C; /* Valor por defecto; se actualizará si hay configuración */
+      --modal-bg: rgba(255, 255, 255, 0.85); /* Fondo del modal; se actualizará desde configuración */
+      --text-color: #333;                    /* Color del texto; se actualizará desde configuración */
+      --primary-color: #FF9F1C;              /* Color primario; se actualizará desde configuración */
     }
 
     body {
@@ -24,6 +24,7 @@
       background-attachment: fixed;
       background-size: cover;
       position: relative;
+      color: var(--text-color);
     }
 
     /* Overlay blanco semitransparente para el drag & drop */
@@ -42,7 +43,7 @@
     }
 
     form {
-      background: var(--card-bg);
+      background: var(--modal-bg);
       backdrop-filter: blur(8px);
       border-radius: 16px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
@@ -52,7 +53,6 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      color: var(--text-color);
       z-index: 1000;
     }
 
@@ -123,7 +123,7 @@
       align-items: center;
       justify-content: center;
       gap: 16px;
-      background: var(--card-bg);
+      background: var(--modal-bg);
       backdrop-filter: blur(8px);
       border-radius: 16px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
@@ -147,7 +147,7 @@
   <form id="pdfForm">
     <h2>Subir PDF del albarán</h2>
     <label for="pdfFile" class="custom-file-upload" id="dropArea">
-      <!-- Texto inicial; se actualizará según la configuración -->
+      <!-- Texto inicial personalizado -->
       Haz clic o arrastra tu PDF aquí
     </label>
     <input type="file" id="pdfFile" accept="application/pdf" />
@@ -172,6 +172,16 @@
     t.get('member', 'private', 'primaryColor').then(color => {
       if (color) {
         document.documentElement.style.setProperty('--primary-color', color);
+      }
+    });
+    t.get('member', 'private', 'modalBackground').then(val => {
+      if (val) {
+        document.documentElement.style.setProperty('--modal-bg', val);
+      }
+    });
+    t.get('member', 'private', 'textColor').then(val => {
+      if (val) {
+        document.documentElement.style.setProperty('--text-color', val);
       }
     });
     t.get('member', 'private', 'dropAreaText').then(text => {
