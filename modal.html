@@ -239,6 +239,13 @@
       e.stopPropagation();
     }, false);
 
+    // Cuando el usuario elige un archivo haciendo clic
+    pdfFileInput.addEventListener('change', function(e) {
+      if (pdfFileInput.files && pdfFileInput.files.length > 0) {
+        dropArea.textContent = pdfFileInput.files[0].name;
+      }
+    });
+
     // Al arrastrar el archivo sobre el área
     dropArea.addEventListener('dragenter', (e) => {
       e.preventDefault();
