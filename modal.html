@@ -5,12 +5,11 @@
   <title>Subir PDF</title>
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
   <style>
-    /* Variables CSS para colores y estilos */
     :root {
-      --main-bg: linear-gradient(135deg, #f5af19, #f12711); /* Degradado de fondo */
-      --card-bg: rgba(255, 255, 255, 0.85);                 /* Efecto "glass" */
-      --text-color: #333;                                   /* Color del texto */
-      --primary-color: #FF9F1C;                             /* Color principal (botones, títulos) */
+      --main-bg: linear-gradient(135deg, #f5af19, #f12711);
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text-color: #333;
+      --primary-color: #FF9F1C;
     }
 
     body {
@@ -46,7 +45,7 @@
       color: var(--primary-color);
     }
 
-    /* Ocultamos el input real y usamos una etiqueta "label" personalizada */
+    /* Ocultamos el input real y usamos un label personalizado */
     #pdfFile {
       display: none;
     }
@@ -61,8 +60,13 @@
       background-color: #fff;
       color: var(--text-color);
     }
+
     .custom-file-upload:hover {
       border-color: var(--primary-color);
+    }
+
+    .highlight {
+      border-color: var(--primary-color) !important;
     }
 
     button {
@@ -86,7 +90,6 @@
   <form id="pdfForm">
     <h2>Subir PDF del albarán</h2>
 
-    <!-- Etiqueta "label" que hace de zona de arrastre y clic -->
     <label for="pdfFile" class="custom-file-upload" id="dropArea">
       Haz clic o arrastra tu PDF aquí
     </label>
@@ -99,42 +102,61 @@
     // Inicializamos el iframe de Trello
     const t = TrelloPowerUp.iframe();
 
-    // Referencias a elementos del DOM
     const pdfForm = document.getElementById('pdfForm');
     const pdfFileInput = document.getElementById('pdfFile');
     const dropArea = document.getElementById('dropArea');
 
-    // Cuando el usuario envía el formulario
+    // Previene el comportamiento por defecto del navegador al arrastrar ficheros
+    // Esto ayuda a que el drop funcione dentro del iframe.
+    document.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, false);
+
+    document.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, false);
+
+    // Cambia el estilo al arrastrar el archivo sobre la zona
+    dropArea.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropArea.classList.add('highlight');
+    }, false);
+
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropArea.classList.add('highlight');
+    }, false);
+
+    dropArea.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropArea.classList.remove('highlight');
+    }, false);
+
+    // Asigna el archivo arrastrado al input
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropArea.classList.remove('highlight');
+
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        pdfFileInput.files = e.dataTransfer.files;
+      }
+    }, false);
+
+    // Envío del formulario
     pdfForm.addEventListener('submit', function(e) {
       e.preventDefault();
       if (pdfFileInput.files.length === 0) {
         alert('Por favor, selecciona o arrastra un archivo PDF.');
         return;
       }
-      // Aquí, más adelante, añadiremos la lógica para subir el PDF a tu endpoint
+      // Aquí añadiremos la lógica para subir el PDF a tu endpoint
       t.closeModal('¡PDF subido correctamente!');
-    });
-
-    // Drag & Drop básico sobre la etiqueta "label"
-    dropArea.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      dropArea.style.borderColor = 'var(--primary-color)';
-    });
-
-    dropArea.addEventListener('dragleave', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      dropArea.style.borderColor = '#ccc';
-    });
-
-    dropArea.addEventListener('drop', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      dropArea.style.borderColor = '#ccc';
-
-      // Asignamos los archivos arrastrados al input
-      pdfFileInput.files = e.dataTransfer.files;
     });
   </script>
 </body>
