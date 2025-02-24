@@ -8,10 +8,10 @@
     :root {
       /* Valores por defecto, en caso de que no se haya configurado nada */
       --main-bg: #f5af19;           /* Fondo detrás del modal */
-      --modal-bg: #ffffff;         /* Fondo del modal */
-      --text-color: #333333;       /* Color del texto */
-      --primary-color: #FF9F1C;    /* Color de títulos / highlights */
-      --button-color: #FF9F1C;     /* Color de los botones */
+      --modal-bg: #ffffff;          /* Fondo del modal */
+      --text-color: #333333;        /* Color del texto */
+      --primary-color: #FF9F1C;     /* Color de títulos / highlights */
+      --button-color: #FF9F1C;      /* Color de los botones */
     }
 
     body {
@@ -22,7 +22,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: var(--main-bg);  /* Aplica el color configurado */
+      background: var(--main-bg);
       background-attachment: fixed;
       background-size: cover;
       position: relative;
@@ -139,6 +139,26 @@
       text-align: center;
       color: var(--primary-color);
     }
+
+    /* Estilos para la lista de adjuntos */
+    #attachmentContainer {
+      display: none;
+      margin-top: 10px;
+    }
+    #attachmentContainer strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .attachment-item {
+      cursor: pointer;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+    .attachment-item.selected {
+      background-color: #e0e0e0;
+    }
   </style>
 </head>
 <body>
@@ -149,10 +169,16 @@
   <form id="pdfForm">
     <h2>Subir PDF del albarán</h2>
     <label for="pdfFile" class="custom-file-upload" id="dropArea">
-      <!-- Texto inicial, lo leeremos de la config en el script -->
       Haz clic o arrastra tu PDF aquí
     </label>
     <input type="file" id="pdfFile" accept="application/pdf" />
+
+    <!-- Nueva sección para elegir adjuntos -->
+    <div id="attachmentContainer">
+      <strong>o elige uno de tus adjuntos:</strong>
+      <div id="attachmentList"></div>
+    </div>
+
     <button type="submit">Subir</button>
   </form>
 
@@ -169,61 +195,44 @@
 
   <script>
     const t = TrelloPowerUp.iframe();
+    let selectedAttachmentURL = null; // Guardará la URL del adjunto seleccionado
 
-    // Cargamos TODOS los colores y textos configurados
-    t.get('member', 'private', 'mainBgColor').then(val => {
-      if (val) {
-        document.documentElement.style.setProperty('--main-bg', val);
-      }
-    });
-    t.get('member', 'private', 'primaryColor').then(val => {
-      if (val) {
-        document.documentElement.style.setProperty('--primary-color', val);
-      }
-    });
-    t.get('member', 'private', 'modalBackground').then(val => {
-      if (val) {
-        document.documentElement.style.setProperty('--modal-bg', val);
-      }
-    });
-    t.get('member', 'private', 'textColor').then(val => {
-      if (val) {
-        document.documentElement.style.setProperty('--text-color', val);
-      }
-    });
-    t.get('member', 'private', 'buttonColor').then(val => {
-      if (val) {
-        document.documentElement.style.setProperty('--button-color', val);
+    // Cargar adjuntos de la tarjeta
+    t.card('attachments').then(function(card) {
+      const attachments = card.attachments;
+      if (attachments && attachments.length > 0) {
+        const attachmentContainer = document.getElementById('attachmentContainer');
+        const attachmentList = document.getElementById('attachmentList');
+        attachmentContainer.style.display = 'block';
+        attachments.forEach(att => {
+          const attElem = document.createElement('div');
+          attElem.textContent = att.name;
+          attElem.className = 'attachment-item';
+          attElem.onclick = function() {
+            document.getElementById('dropArea').textContent = att.name;
+            selectedAttachmentURL = att.url;
+            // Marcar visualmente el adjunto seleccionado
+            document.querySelectorAll('.attachment-item').forEach(item => item.classList.remove('selected'));
+            attElem.classList.add('selected');
+          };
+          attachmentList.appendChild(attElem);
+        });
       }
     });
 
-    // Textos
-    t.get('member', 'private', 'dropAreaText').then(text => {
-      if (text) {
-        document.getElementById('dropArea').textContent = text;
-      }
-    });
-
-    let dragText = "Suelte aquí su archivo";
-    t.get('member', 'private', 'dropTextOnDrag').then(text => {
-      if (text) {
-        dragText = text;
-      }
-    });
-
-    let successText = "¡PDF subido correctamente!";
-    t.get('member', 'private', 'successText').then(text => {
-      if (text) {
-        successText = text;
-        document.querySelector('#successMessage h2').textContent = successText;
-      }
-    });
-
-    // Referencias
-    const pdfForm = document.getElementById('pdfForm');
+    // Mostrar nombre del archivo al seleccionar con clic
     const pdfFileInput = document.getElementById('pdfFile');
+    pdfFileInput.addEventListener('change', function(e) {
+      if (pdfFileInput.files && pdfFileInput.files.length > 0) {
+        document.getElementById('dropArea').textContent = pdfFileInput.files[0].name;
+        // Limpiar la variable de adjunto seleccionado
+        selectedAttachmentURL = null;
+      }
+    });
+
     const dropArea = document.getElementById('dropArea');
     const overlay = document.getElementById('overlay');
+    const pdfForm = document.getElementById('pdfForm');
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
     const successMessage = document.getElementById('successMessage');
@@ -239,19 +248,12 @@
       e.stopPropagation();
     }, false);
 
-    // Cuando el usuario elige un archivo haciendo clic
-    pdfFileInput.addEventListener('change', function(e) {
-      if (pdfFileInput.files && pdfFileInput.files.length > 0) {
-        dropArea.textContent = pdfFileInput.files[0].name;
-      }
-    });
-
-    // Al arrastrar el archivo sobre el área
+    // Manejo del arrastrar y soltar
     dropArea.addEventListener('dragenter', (e) => {
       e.preventDefault();
       e.stopPropagation();
       overlay.classList.add('active');
-      dropArea.textContent = dragText;
+      dropArea.textContent = "Suelte aquí su archivo";
       dropArea.classList.add('highlight');
     }, false);
 
@@ -259,7 +261,7 @@
       e.preventDefault();
       e.stopPropagation();
       overlay.classList.add('active');
-      dropArea.textContent = dragText;
+      dropArea.textContent = "Suelte aquí su archivo";
       dropArea.classList.add('highlight');
     }, false);
 
@@ -268,13 +270,12 @@
       e.stopPropagation();
       overlay.classList.remove('active');
       dropArea.classList.remove('highlight');
-      // Restauramos el texto inicial configurado
+      // Restaurar el texto inicial configurado (si existe)
       t.get('member', 'private', 'dropAreaText').then(text => {
         dropArea.textContent = text || "Haz clic o arrastra tu PDF aquí";
       });
     }, false);
 
-    // Al soltar el archivo, se actualiza el texto con el nombre del archivo
     dropArea.addEventListener('drop', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -282,39 +283,63 @@
       dropArea.classList.remove('highlight');
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         pdfFileInput.files = e.dataTransfer.files;
-        dropArea.textContent = e.dataTransfer.files[0].name;
+        document.getElementById('dropArea').textContent = e.dataTransfer.files[0].name;
+        // Limpiar cualquier selección previa de adjunto
+        selectedAttachmentURL = null;
       }
     }, false);
 
-    // Al enviar el formulario, mostramos la barra de progreso simulada
+    // Al enviar el formulario, se muestra la barra de progreso (simulada)
     pdfForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      if (pdfFileInput.files.length === 0) {
-        alert('Por favor, selecciona o arrastra un archivo PDF.');
+      // Si no hay archivo seleccionado por clic/drag y tampoco se eligió un adjunto, mostramos alerta
+      if (pdfFileInput.files.length === 0 && !selectedAttachmentURL) {
+        alert('Por favor, selecciona o arrastra un archivo PDF o elige un adjunto.');
         return;
       }
-      // Ocultamos el formulario y mostramos la barra de progreso
+      const formData = new FormData();
+      if (pdfFileInput.files.length > 0) {
+        formData.append('file', pdfFileInput.files[0], pdfFileInput.files[0].name);
+      } else if (selectedAttachmentURL) {
+        formData.append('attachmentUrl', selectedAttachmentURL);
+      }
+
+      // Aquí es donde enviarías el formData a tu endpoint o webhook.
+      // Ejemplo:
+      /*
+      fetch('https://tu-webhook-url.com', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+        console.log('Respuesta:', data);
+      })
+      .catch(err => {
+        console.error('Error:', err);
+      });
+      */
+
+      // Simulación de la barra de progreso:
       pdfForm.style.display = 'none';
       progressContainer.style.display = 'block';
       progressBar.style.width = '0';
-      // Forzamos reflow para reiniciar la animación
       void progressBar.offsetWidth;
-      // Animamos la barra hasta el 100% en 2 segundos
       progressBar.style.width = '100%';
 
-      // Tras 2 segundos, ocultamos la barra y mostramos el mensaje de éxito
       setTimeout(() => {
         progressContainer.style.display = 'none';
         successMessage.style.display = 'flex';
       }, 2000);
     });
 
-    // Botón para subir otro PDF (reinicia el proceso)
+    // Botón para reiniciar el proceso de subida
     uploadAnother.addEventListener('click', function() {
       pdfFileInput.value = "";
       t.get('member', 'private', 'dropAreaText').then(text => {
         dropArea.textContent = text || "Haz clic o arrastra tu PDF aquí";
       });
+      selectedAttachmentURL = null;
       successMessage.style.display = 'none';
       pdfForm.style.display = 'flex';
     });
