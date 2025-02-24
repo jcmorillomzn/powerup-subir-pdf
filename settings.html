@@ -2,88 +2,158 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Configuración de Power-Up</title>
+  <title>Configuración del Power-Up</title>
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
   <style>
+    /* Estilos modernos para la configuración */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
       padding: 20px;
-      background: #f5f5f5;
-    }
-    h2 {
+      background: #f0f0f0;
       color: #333;
-      margin-bottom: 20px;
     }
-    .config-section {
-      margin-bottom: 20px;
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
     }
-    label {
+    .header {
+      background: #FF9F1C;
+      padding: 10px;
+      text-align: center;
+      color: #fff;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #ddd;
+    }
+    .tabs button {
+      flex: 1;
+      padding: 10px;
+      background: #f9f9f9;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .tabs button.active {
+      background: #fff;
+      border-bottom: 2px solid #FF9F1C;
+      font-weight: bold;
+    }
+    .tab-content {
+      padding: 15px;
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
       display: block;
       margin-bottom: 5px;
       font-weight: bold;
     }
-    input[type="color"],
-    input[type="text"] {
+    .form-group input[type="color"],
+    .form-group input[type="text"] {
+      width: 100%;
       padding: 8px;
-      margin-bottom: 10px;
+      box-sizing: border-box;
       border: 1px solid #ccc;
       border-radius: 4px;
-      width: 100%;
-      box-sizing: border-box;
     }
-    button {
-      background-color: #FF9F1C;
+    .save-button {
+      width: 100%;
+      padding: 12px;
+      background: #FF9F1C;
+      color: #fff;
       border: none;
-      color: white;
-      padding: 10px 20px;
-      cursor: pointer;
       border-radius: 4px;
       font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 10px;
     }
-    button:hover {
-      background-color: #e08d15;
+    .save-button:hover {
+      background: #e08d15;
     }
   </style>
 </head>
 <body>
-  <h2>Personaliza tu Power-Up</h2>
-  
-  <div class="config-section">
-    <label for="primaryColor">Color Primario:</label>
-    <input type="color" id="primaryColor" value="#FF9F1C">
+  <div class="container">
+    <div class="header">Configuración del Power-Up</div>
+    <div class="tabs">
+      <button id="tab-colores" class="active">Colores</button>
+      <button id="tab-textos">Textos</button>
+    </div>
+    <div id="content-colores" class="tab-content active">
+      <div class="form-group">
+        <label for="primaryColor">Color Primario:</label>
+        <input type="color" id="primaryColor" value="#FF9F1C">
+      </div>
+      <div class="form-group">
+        <label for="modalBackground">Fondo del Modal:</label>
+        <input type="color" id="modalBackground" value="#ffffff">
+      </div>
+      <div class="form-group">
+        <label for="textColor">Color del Texto:</label>
+        <input type="color" id="textColor" value="#333333">
+      </div>
+      <div class="form-group">
+        <label for="buttonColor">Color de Botones:</label>
+        <input type="color" id="buttonColor" value="#FF9F1C">
+      </div>
+    </div>
+    <div id="content-textos" class="tab-content">
+      <div class="form-group">
+        <label for="dropAreaText">Texto del Área de Drop:</label>
+        <input type="text" id="dropAreaText" value="Haz clic o arrastra tu PDF aquí">
+      </div>
+      <div class="form-group">
+        <label for="dropTextOnDrag">Texto al Arrastrar el Archivo:</label>
+        <input type="text" id="dropTextOnDrag" value="Suelte aquí su archivo">
+      </div>
+      <div class="form-group">
+        <label for="successText">Texto de Éxito:</label>
+        <input type="text" id="successText" value="¡PDF subido correctamente!">
+      </div>
+    </div>
+    <button id="saveBtn" class="save-button">Guardar Configuración</button>
   </div>
-  
-  <div class="config-section">
-    <label for="modalBackground">Fondo del Modal:</label>
-    <input type="color" id="modalBackground" value="#ffffff">
-  </div>
-  
-  <div class="config-section">
-    <label for="textColor">Color del Texto:</label>
-    <input type="color" id="textColor" value="#333333">
-  </div>
-  
-  <div class="config-section">
-    <label for="dropAreaText">Texto del Área de Drop:</label>
-    <input type="text" id="dropAreaText" value="Haz clic o arrastra tu PDF aquí">
-  </div>
-  
-  <div class="config-section">
-    <label for="dropTextOnDrag">Texto al Arrastrar el Archivo:</label>
-    <input type="text" id="dropTextOnDrag" value="Suelte aquí su archivo">
-  </div>
-  
-  <div class="config-section">
-    <label for="successText">Texto de Éxito:</label>
-    <input type="text" id="successText" value="¡PDF subido correctamente!">
-  </div>
-  
-  <button id="saveBtn">Guardar Configuración</button>
 
   <script>
     const t = TrelloPowerUp.iframe();
 
-    // Al cargar, recuperamos los valores almacenados (si existen)
+    // Función para cambiar entre pestañas
+    const tabColores = document.getElementById('tab-colores');
+    const tabTextos = document.getElementById('tab-textos');
+    const contentColores = document.getElementById('content-colores');
+    const contentTextos = document.getElementById('content-textos');
+
+    tabColores.addEventListener('click', () => {
+      tabColores.classList.add('active');
+      tabTextos.classList.remove('active');
+      contentColores.classList.add('active');
+      contentTextos.classList.remove('active');
+    });
+
+    tabTextos.addEventListener('click', () => {
+      tabTextos.classList.add('active');
+      tabColores.classList.remove('active');
+      contentTextos.classList.add('active');
+      contentColores.classList.remove('active');
+    });
+
+    // Recuperar los valores almacenados
     t.get('member', 'private', 'primaryColor').then(val => {
       if(val) document.getElementById('primaryColor').value = val;
     });
@@ -92,6 +162,9 @@
     });
     t.get('member', 'private', 'textColor').then(val => {
       if(val) document.getElementById('textColor').value = val;
+    });
+    t.get('member', 'private', 'buttonColor').then(val => {
+      if(val) document.getElementById('buttonColor').value = val;
     });
     t.get('member', 'private', 'dropAreaText').then(val => {
       if(val) document.getElementById('dropAreaText').value = val;
@@ -103,11 +176,12 @@
       if(val) document.getElementById('successText').value = val;
     });
 
-    // Guardamos todos los valores al hacer clic en "Guardar"
+    // Guardar los valores al pulsar "Guardar Configuración"
     document.getElementById('saveBtn').addEventListener('click', () => {
       const primaryColor = document.getElementById('primaryColor').value;
       const modalBackground = document.getElementById('modalBackground').value;
       const textColor = document.getElementById('textColor').value;
+      const buttonColor = document.getElementById('buttonColor').value;
       const dropAreaText = document.getElementById('dropAreaText').value;
       const dropTextOnDrag = document.getElementById('dropTextOnDrag').value;
       const successText = document.getElementById('successText').value;
@@ -116,6 +190,7 @@
         t.set('member', 'private', 'primaryColor', primaryColor),
         t.set('member', 'private', 'modalBackground', modalBackground),
         t.set('member', 'private', 'textColor', textColor),
+        t.set('member', 'private', 'buttonColor', buttonColor),
         t.set('member', 'private', 'dropAreaText', dropAreaText),
         t.set('member', 'private', 'dropTextOnDrag', dropTextOnDrag),
         t.set('member', 'private', 'successText', successText)
