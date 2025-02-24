@@ -4,6 +4,7 @@
   "author": "JC",
   "version": "1.0.0",
   "capabilities": [
-    "card-buttons"
+    "card-buttons",
+    "show-settings"
   ]
 }
