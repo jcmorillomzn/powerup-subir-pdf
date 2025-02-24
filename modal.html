@@ -140,7 +140,7 @@
       color: var(--primary-color);
     }
 
-    /* Estilos para la lista de adjuntos */
+    /* Lista de adjuntos */
     #attachmentContainer {
       display: none;
       margin-top: 10px;
@@ -159,6 +159,21 @@
     .attachment-item.selected {
       background-color: #e0e0e0;
     }
+
+    /* Contenedor y estilos para la vista previa */
+    #previewContainer {
+      display: none; /* Oculto por defecto */
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      overflow: hidden;
+      height: 300px; /* Ajusta la altura a tu gusto */
+    }
+    #pdfPreview {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
   </style>
 </head>
 <body>
@@ -173,10 +188,15 @@
     </label>
     <input type="file" id="pdfFile" accept="application/pdf" />
 
-    <!-- Nueva sección para elegir adjuntos -->
+    <!-- Contenedor de adjuntos de Trello -->
     <div id="attachmentContainer">
       <strong>o elige uno de tus adjuntos:</strong>
       <div id="attachmentList"></div>
+    </div>
+
+    <!-- Contenedor para la vista previa del PDF -->
+    <div id="previewContainer">
+      <iframe id="pdfPreview"></iframe>
     </div>
 
     <button type="submit">Subir</button>
@@ -197,48 +217,42 @@
     const t = TrelloPowerUp.iframe();
     let selectedAttachmentURL = null; // Guardará la URL del adjunto seleccionado
 
-    // Cargar adjuntos de la tarjeta
-    t.card('attachments').then(function(card) {
-      const attachments = card.attachments;
-      if (attachments && attachments.length > 0) {
-        const attachmentContainer = document.getElementById('attachmentContainer');
-        const attachmentList = document.getElementById('attachmentList');
-        attachmentContainer.style.display = 'block';
-        attachments.forEach(att => {
-          const attElem = document.createElement('div');
-          attElem.textContent = att.name;
-          attElem.className = 'attachment-item';
-          attElem.onclick = function() {
-            document.getElementById('dropArea').textContent = att.name;
-            selectedAttachmentURL = att.url;
-            // Marcar visualmente el adjunto seleccionado
-            document.querySelectorAll('.attachment-item').forEach(item => item.classList.remove('selected'));
-            attElem.classList.add('selected');
-          };
-          attachmentList.appendChild(attElem);
-        });
-      }
-    });
-
-    // Mostrar nombre del archivo al seleccionar con clic
-    const pdfFileInput = document.getElementById('pdfFile');
-    pdfFileInput.addEventListener('change', function(e) {
-      if (pdfFileInput.files && pdfFileInput.files.length > 0) {
-        document.getElementById('dropArea').textContent = pdfFileInput.files[0].name;
-        // Limpiar la variable de adjunto seleccionado
-        selectedAttachmentURL = null;
-      }
-    });
-
     const dropArea = document.getElementById('dropArea');
     const overlay = document.getElementById('overlay');
     const pdfForm = document.getElementById('pdfForm');
+    const pdfFileInput = document.getElementById('pdfFile');
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
     const successMessage = document.getElementById('successMessage');
     const uploadAnother = document.getElementById('uploadAnother');
+    const attachmentContainer = document.getElementById('attachmentContainer');
+    const attachmentList = document.getElementById('attachmentList');
 
-    // Evitar que el navegador abra el PDF al arrastrar y soltar
+    // Vista previa
+    const previewContainer = document.getElementById('previewContainer');
+    const pdfPreview = document.getElementById('pdfPreview');
+
+    // Cargamos los colores y textos configurados
+    t.get('member', 'private', 'mainBgColor').then(val => {
+      if (val) document.documentElement.style.setProperty('--main-bg', val);
+    });
+    t.get('member', 'private', 'primaryColor').then(val => {
+      if (val) document.documentElement.style.setProperty('--primary-color', val);
+    });
+    t.get('member', 'private', 'modalBackground').then(val => {
+      if (val) document.documentElement.style.setProperty('--modal-bg', val);
+    });
+    t.get('member', 'private', 'textColor').then(val => {
+      if (val) document.documentElement.style.setProperty('--text-color', val);
+    });
+    t.get('member', 'private', 'buttonColor').then(val => {
+      if (val) document.documentElement.style.setProperty('--button-color', val);
+    });
+    t.get('member', 'private', 'dropAreaText').then(text => {
+      if (text) dropArea.textContent = text;
+    });
+
+    // Arrastrar y soltar
     document.addEventListener('dragover', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -248,7 +262,6 @@
       e.stopPropagation();
     }, false);
 
-    // Manejo del arrastrar y soltar
     dropArea.addEventListener('dragenter', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -270,7 +283,6 @@
       e.stopPropagation();
       overlay.classList.remove('active');
       dropArea.classList.remove('highlight');
-      // Restaurar el texto inicial configurado (si existe)
       t.get('member', 'private', 'dropAreaText').then(text => {
         dropArea.textContent = text || "Haz clic o arrastra tu PDF aquí";
       });
@@ -283,44 +295,102 @@
       dropArea.classList.remove('highlight');
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         pdfFileInput.files = e.dataTransfer.files;
-        document.getElementById('dropArea').textContent = e.dataTransfer.files[0].name;
-        // Limpiar cualquier selección previa de adjunto
+        dropArea.textContent = e.dataTransfer.files[0].name;
+        // Limpia la selección previa de adjunto
         selectedAttachmentURL = null;
+        document.querySelectorAll('.attachment-item').forEach(item => item.classList.remove('selected'));
+
+        // Mostramos vista previa si es posible
+        showLocalFilePreview(pdfFileInput.files[0]);
       }
     }, false);
 
-    // Al enviar el formulario, se muestra la barra de progreso (simulada)
+    // Cuando el usuario elige un archivo haciendo clic
+    pdfFileInput.addEventListener('change', function(e) {
+      if (pdfFileInput.files && pdfFileInput.files.length > 0) {
+        dropArea.textContent = pdfFileInput.files[0].name;
+        // Limpia la selección previa de adjunto
+        selectedAttachmentURL = null;
+        document.querySelectorAll('.attachment-item').forEach(item => item.classList.remove('selected'));
+
+        // Mostramos vista previa del archivo local
+        showLocalFilePreview(pdfFileInput.files[0]);
+      }
+    });
+
+    // Función para vista previa de un archivo local
+    function showLocalFilePreview(file) {
+      // Si es PDF, intentamos mostrarlo en el iframe usando Data URL
+      if (file.type === 'application/pdf') {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          pdfPreview.src = e.target.result;
+          previewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        pdfPreview.src = '';
+        previewContainer.style.display = 'none';
+      }
+    }
+
+    // Cargar adjuntos de la tarjeta Trello
+    t.card('attachments').then(function(card) {
+      const attachments = card.attachments;
+      if (attachments && attachments.length > 0) {
+        attachmentContainer.style.display = 'block';
+        attachments.forEach(att => {
+          const attElem = document.createElement('div');
+          attElem.textContent = att.name;
+          attElem.className = 'attachment-item';
+          attElem.onclick = function() {
+            dropArea.textContent = att.name;
+            selectedAttachmentURL = att.url;
+            // Desmarcar los otros
+            document.querySelectorAll('.attachment-item').forEach(item => item.classList.remove('selected'));
+            attElem.classList.add('selected');
+
+            // Intentar mostrar vista previa en el iframe
+            showAttachmentPreview(att.url);
+            // Limpiamos cualquier archivo local seleccionado
+            pdfFileInput.value = "";
+          };
+          attachmentList.appendChild(attElem);
+        });
+      }
+    });
+
+    // Función para vista previa de un adjunto (URL)
+    function showAttachmentPreview(url) {
+      // Asignamos directamente la URL al iframe
+      // Si la URL es pública, se verá; si no, puede que bloquee por permisos
+      pdfPreview.src = url;
+      previewContainer.style.display = 'block';
+    }
+
+    // Al enviar el formulario
     pdfForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      // Si no hay archivo seleccionado por clic/drag y tampoco se eligió un adjunto, mostramos alerta
       if (pdfFileInput.files.length === 0 && !selectedAttachmentURL) {
         alert('Por favor, selecciona o arrastra un archivo PDF o elige un adjunto.');
         return;
       }
+
+      // Aquí harías la subida real al servidor o a Make
+      /*
       const formData = new FormData();
       if (pdfFileInput.files.length > 0) {
         formData.append('file', pdfFileInput.files[0], pdfFileInput.files[0].name);
       } else if (selectedAttachmentURL) {
         formData.append('attachmentUrl', selectedAttachmentURL);
       }
-
-      // Aquí es donde enviarías el formData a tu endpoint o webhook.
-      // Ejemplo:
-      /*
-      fetch('https://tu-webhook-url.com', {
+      fetch('https://tu-webhook-o-endpoint', {
         method: 'POST',
         body: formData
-      })
-      .then(response => response.text())
-      .then(data => {
-        console.log('Respuesta:', data);
-      })
-      .catch(err => {
-        console.error('Error:', err);
-      });
+      }).then(...)
       */
 
-      // Simulación de la barra de progreso:
+      // Simulación de barra de progreso
       pdfForm.style.display = 'none';
       progressContainer.style.display = 'block';
       progressBar.style.width = '0';
@@ -333,15 +403,21 @@
       }, 2000);
     });
 
-    // Botón para reiniciar el proceso de subida
+    // Botón para reiniciar el proceso
     uploadAnother.addEventListener('click', function() {
       pdfFileInput.value = "";
+      selectedAttachmentURL = null;
+      pdfForm.style.display = 'flex';
+      successMessage.style.display = 'none';
+      previewContainer.style.display = 'none';
+      pdfPreview.src = '';
+
       t.get('member', 'private', 'dropAreaText').then(text => {
         dropArea.textContent = text || "Haz clic o arrastra tu PDF aquí";
       });
-      selectedAttachmentURL = null;
-      successMessage.style.display = 'none';
-      pdfForm.style.display = 'flex';
+
+      // Desmarcar adjuntos
+      document.querySelectorAll('.attachment-item').forEach(item => item.classList.remove('selected'));
     });
   </script>
 </body>
