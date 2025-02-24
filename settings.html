@@ -5,7 +5,7 @@
   <title>Configuración del Power-Up</title>
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
   <style>
-    /* Estilos más grandes y modernos, con pestañas */
+    /* Estilos con pestañas */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
@@ -55,28 +55,23 @@
     .tab-content.active {
       display: block;
     }
-
-    /* Alineación horizontal de la etiqueta e input */
     .form-group {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       margin-bottom: 15px;
     }
     .form-group label {
       font-weight: bold;
-      margin-right: 10px;
-      min-width: 200px; /* Ajusta a tu gusto */
+      display: block;
+      margin-bottom: 5px;
     }
-    .form-group input[type="color"] {
+    input[type="color"] {
       width: 50px;
       height: 40px;
       border: none;
-      cursor: pointer;
       background: none;
+      cursor: pointer;
     }
-    .form-group input[type="text"] {
-      flex: 1;
+    input[type="text"] {
+      width: 100%;
       padding: 8px;
       box-sizing: border-box;
       border: 1px solid #ccc;
@@ -97,6 +92,20 @@
     .save-button:hover {
       background: #e08d15;
     }
+    /* Ocultamos la parte avanzada si no se selecciona "personalizado" */
+    #advancedColors {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .theme-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -107,34 +116,48 @@
       <button id="tab-textos">Textos</button>
     </div>
     <div id="content-colores" class="tab-content active">
-      <!-- Sección Colores -->
+      <!-- Elección de tema predefinido o personalizado -->
       <div class="form-group">
-        <label for="mainBgColor">Fondo General (detrás del modal):</label>
-        <input type="color" id="mainBgColor" value="#f5af19">
+        <label>Elige un tema:</label>
+        <div class="theme-options">
+          <label><input type="radio" name="theme" value="rojo">Rojo</label>
+          <label><input type="radio" name="theme" value="azul">Azul</label>
+          <label><input type="radio" name="theme" value="amarillo">Amarillo</label>
+          <label><input type="radio" name="theme" value="verde">Verde</label>
+          <label><input type="radio" name="theme" value="gris">Gris</label>
+          <label><input type="radio" name="theme" value="personalizado" checked>Personalizado</label>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="topBarColor">Color Barra Superior (título modal):</label>
-        <input type="color" id="topBarColor" value="#FF9F1C">
-      </div>
-      <div class="form-group">
-        <label for="primaryColor">Color Primario (títulos, highlights):</label>
-        <input type="color" id="primaryColor" value="#FF9F1C">
-      </div>
-      <div class="form-group">
-        <label for="modalBackground">Fondo del Modal:</label>
-        <input type="color" id="modalBackground" value="#ffffff">
-      </div>
-      <div class="form-group">
-        <label for="textColor">Color del Texto:</label>
-        <input type="color" id="textColor" value="#333333">
-      </div>
-      <div class="form-group">
-        <label for="buttonColor">Color de Botones:</label>
-        <input type="color" id="buttonColor" value="#FF9F1C">
+
+      <!-- Parte avanzada (solo se muestra si "personalizado") -->
+      <div id="advancedColors">
+        <div class="form-group">
+          <label for="mainBgColor">Fondo General (detrás del modal):</label>
+          <input type="color" id="mainBgColor" value="#f5af19">
+        </div>
+        <div class="form-group">
+          <label for="topBarColor">Color Barra Superior (título modal):</label>
+          <input type="color" id="topBarColor" value="#FF9F1C">
+        </div>
+        <div class="form-group">
+          <label for="primaryColor">Color Primario (títulos, highlights):</label>
+          <input type="color" id="primaryColor" value="#FF9F1C">
+        </div>
+        <div class="form-group">
+          <label for="modalBackground">Fondo del Modal:</label>
+          <input type="color" id="modalBackground" value="#ffffff">
+        </div>
+        <div class="form-group">
+          <label for="textColor">Color del Texto:</label>
+          <input type="color" id="textColor" value="#333333">
+        </div>
+        <div class="form-group">
+          <label for="buttonColor">Color de Botones:</label>
+          <input type="color" id="buttonColor" value="#FF9F1C">
+        </div>
       </div>
     </div>
     <div id="content-textos" class="tab-content">
-      <!-- Sección Textos -->
       <div class="form-group">
         <label for="dropAreaText">Texto del Área de Drop:</label>
         <input type="text" id="dropAreaText" value="Haz clic o arrastra tu PDF aquí">
@@ -174,37 +197,132 @@
       contentColores.classList.remove('active');
     });
 
-    // Recuperar los valores almacenados
-    t.get('member', 'private', 'mainBgColor').then(val => {
-      if(val) document.getElementById('mainBgColor').value = val;
-    });
-    t.get('member', 'private', 'topBarColor').then(val => {
-      if(val) document.getElementById('topBarColor').value = val;
-    });
-    t.get('member', 'private', 'primaryColor').then(val => {
-      if(val) document.getElementById('primaryColor').value = val;
-    });
-    t.get('member', 'private', 'modalBackground').then(val => {
-      if(val) document.getElementById('modalBackground').value = val;
-    });
-    t.get('member', 'private', 'textColor').then(val => {
-      if(val) document.getElementById('textColor').value = val;
-    });
-    t.get('member', 'private', 'buttonColor').then(val => {
-      if(val) document.getElementById('buttonColor').value = val;
-    });
-    t.get('member', 'private', 'dropAreaText').then(val => {
-      if(val) document.getElementById('dropAreaText').value = val;
-    });
-    t.get('member', 'private', 'dropTextOnDrag').then(val => {
-      if(val) document.getElementById('dropTextOnDrag').value = val;
-    });
-    t.get('member', 'private', 'successText').then(val => {
-      if(val) document.getElementById('successText').value = val;
+    // Radios de tema
+    const themeRadios = document.querySelectorAll('input[name="theme"]');
+    const advancedColorsDiv = document.getElementById('advancedColors');
+
+    // Definimos 5 temas predefinidos
+    const predefThemes = {
+      rojo: {
+        mainBgColor: '#e53935',
+        topBarColor: '#c62828',
+        primaryColor: '#b71c1c',
+        modalBackground: '#ffffff',
+        textColor: '#ffffff',  // para que contraste en fondo rojo
+        buttonColor: '#b71c1c'
+      },
+      azul: {
+        mainBgColor: '#2196f3',
+        topBarColor: '#1976d2',
+        primaryColor: '#0d47a1',
+        modalBackground: '#ffffff',
+        textColor: '#ffffff',
+        buttonColor: '#0d47a1'
+      },
+      amarillo: {
+        mainBgColor: '#ffeb3b',
+        topBarColor: '#fdd835',
+        primaryColor: '#fbc02d',
+        modalBackground: '#ffffff',
+        textColor: '#333333',
+        buttonColor: '#f9a825'
+      },
+      verde: {
+        mainBgColor: '#4caf50',
+        topBarColor: '#43a047',
+        primaryColor: '#2e7d32',
+        modalBackground: '#ffffff',
+        textColor: '#ffffff',
+        buttonColor: '#2e7d32'
+      },
+      gris: {
+        mainBgColor: '#9e9e9e',
+        topBarColor: '#757575',
+        primaryColor: '#616161',
+        modalBackground: '#ffffff',
+        textColor: '#333333',
+        buttonColor: '#424242'
+      }
+    };
+
+    // Al cambiar de tema, si no es "personalizado", asignamos los valores y ocultamos advanced
+    themeRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (radio.value !== 'personalizado') {
+          // Cogemos el tema
+          const theme = predefThemes[radio.value];
+          // Asignamos a los inputs
+          document.getElementById('mainBgColor').value = theme.mainBgColor;
+          document.getElementById('topBarColor').value = theme.topBarColor;
+          document.getElementById('primaryColor').value = theme.primaryColor;
+          document.getElementById('modalBackground').value = theme.modalBackground;
+          document.getElementById('textColor').value = theme.textColor;
+          document.getElementById('buttonColor').value = theme.buttonColor;
+          // Ocultamos la parte avanzada
+          advancedColorsDiv.style.display = 'none';
+        } else {
+          // Mostrar la parte avanzada
+          advancedColorsDiv.style.display = 'block';
+        }
+      });
     });
 
-    // Guardar los valores al pulsar "Guardar Configuración"
+    // Al cargar, recuperamos lo que el usuario tenía guardado
+    Promise.all([
+      t.get('member', 'private', 'mainBgColor'),
+      t.get('member', 'private', 'topBarColor'),
+      t.get('member', 'private', 'primaryColor'),
+      t.get('member', 'private', 'modalBackground'),
+      t.get('member', 'private', 'textColor'),
+      t.get('member', 'private', 'buttonColor'),
+      t.get('member', 'private', 'dropAreaText'),
+      t.get('member', 'private', 'dropTextOnDrag'),
+      t.get('member', 'private', 'successText'),
+      t.get('member', 'private', 'selectedTheme') // para saber si estaba en "rojo", "azul", etc.
+    ]).then(values => {
+      const [
+        mainBgColor,
+        topBarColor,
+        primaryColor,
+        modalBackground,
+        textColor,
+        buttonColor,
+        dropAreaText,
+        dropTextOnDrag,
+        successText,
+        selectedTheme
+      ] = values;
+
+      // Rellenamos los inputs
+      if(mainBgColor) document.getElementById('mainBgColor').value = mainBgColor;
+      if(topBarColor) document.getElementById('topBarColor').value = topBarColor;
+      if(primaryColor) document.getElementById('primaryColor').value = primaryColor;
+      if(modalBackground) document.getElementById('modalBackground').value = modalBackground;
+      if(textColor) document.getElementById('textColor').value = textColor;
+      if(buttonColor) document.getElementById('buttonColor').value = buttonColor;
+      if(dropAreaText) document.getElementById('dropAreaText').value = dropAreaText;
+      if(dropTextOnDrag) document.getElementById('dropTextOnDrag').value = dropTextOnDrag;
+      if(successText) document.getElementById('successText').value = successText;
+
+      // Si había un tema seleccionado, marcamos el radio
+      if(selectedTheme && predefThemes[selectedTheme]) {
+        // Es uno de los predefinidos
+        document.querySelector(`input[value="${selectedTheme}"]`).checked = true;
+        // Ocultamos advanced
+        advancedColorsDiv.style.display = 'none';
+      } else if(selectedTheme === 'personalizado') {
+        document.querySelector('input[value="personalizado"]').checked = true;
+        advancedColorsDiv.style.display = 'block';
+      }
+    });
+
+    // Guardar
     document.getElementById('saveBtn').addEventListener('click', () => {
+      // Miramos qué tema está seleccionado
+      const selectedRadio = document.querySelector('input[name="theme"]:checked');
+      const themeName = selectedRadio.value;
+
+      // Leemos los valores de los inputs avanzados
       const mainBgColor = document.getElementById('mainBgColor').value;
       const topBarColor = document.getElementById('topBarColor').value;
       const primaryColor = document.getElementById('primaryColor').value;
@@ -215,19 +333,40 @@
       const dropTextOnDrag = document.getElementById('dropTextOnDrag').value;
       const successText = document.getElementById('successText').value;
 
-      Promise.all([
-        t.set('member', 'private', 'mainBgColor', mainBgColor),
-        t.set('member', 'private', 'topBarColor', topBarColor),
-        t.set('member', 'private', 'primaryColor', primaryColor),
-        t.set('member', 'private', 'modalBackground', modalBackground),
-        t.set('member', 'private', 'textColor', textColor),
-        t.set('member', 'private', 'buttonColor', buttonColor),
-        t.set('member', 'private', 'dropAreaText', dropAreaText),
-        t.set('member', 'private', 'dropTextOnDrag', dropTextOnDrag),
-        t.set('member', 'private', 'successText', successText)
-      ]).then(() => {
-        t.closeModal();
-      });
+      // Si el tema es uno de los predefinidos, usamos sus valores
+      if(themeName !== 'personalizado') {
+        const theme = predefThemes[themeName];
+        Promise.all([
+          t.set('member', 'private', 'mainBgColor', theme.mainBgColor),
+          t.set('member', 'private', 'topBarColor', theme.topBarColor),
+          t.set('member', 'private', 'primaryColor', theme.primaryColor),
+          t.set('member', 'private', 'modalBackground', theme.modalBackground),
+          t.set('member', 'private', 'textColor', theme.textColor),
+          t.set('member', 'private', 'buttonColor', theme.buttonColor),
+          t.set('member', 'private', 'dropAreaText', dropAreaText),
+          t.set('member', 'private', 'dropTextOnDrag', dropTextOnDrag),
+          t.set('member', 'private', 'successText', successText),
+          t.set('member', 'private', 'selectedTheme', themeName)
+        ]).then(() => {
+          t.closeModal();
+        });
+      } else {
+        // Guardamos los valores tal cual
+        Promise.all([
+          t.set('member', 'private', 'mainBgColor', mainBgColor),
+          t.set('member', 'private', 'topBarColor', topBarColor),
+          t.set('member', 'private', 'primaryColor', primaryColor),
+          t.set('member', 'private', 'modalBackground', modalBackground),
+          t.set('member', 'private', 'textColor', textColor),
+          t.set('member', 'private', 'buttonColor', buttonColor),
+          t.set('member', 'private', 'dropAreaText', dropAreaText),
+          t.set('member', 'private', 'dropTextOnDrag', dropTextOnDrag),
+          t.set('member', 'private', 'successText', successText),
+          t.set('member', 'private', 'selectedTheme', 'personalizado')
+        ]).then(() => {
+          t.closeModal();
+        });
+      }
     });
   </script>
 </body>
