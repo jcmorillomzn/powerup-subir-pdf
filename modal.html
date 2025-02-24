@@ -23,8 +23,25 @@
       background: var(--main-bg);
       background-attachment: fixed;
       background-size: cover;
+      position: relative; /* Para colocar el overlay */
     }
 
+    /* Overlay blanco con transparencia */
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.5);
+      display: none; /* Oculto por defecto */
+      z-index: 999;  /* Por encima del contenido */
+    }
+    #overlay.active {
+      display: block;
+    }
+
+    /* Contenedor del formulario */
     form {
       background: var(--card-bg);
       backdrop-filter: blur(8px);
@@ -37,6 +54,7 @@
       flex-direction: column;
       gap: 16px;
       color: var(--text-color);
+      z-index: 1000; /* Por encima del overlay */
     }
 
     h2 {
@@ -65,10 +83,6 @@
       border-color: var(--primary-color);
     }
 
-    .highlight {
-      border-color: var(--primary-color) !important;
-    }
-
     button {
       background-color: var(--primary-color);
       color: #fff;
@@ -84,30 +98,65 @@
     button:hover {
       background-color: #e08d15;
     }
+
+    /* Mensaje de éxito (oculto inicialmente) */
+    #successMessage {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      padding: 24px;
+      width: 90%;
+      max-width: 400px;
+      z-index: 1000;
+    }
+
+    #successMessage h2 {
+      margin: 0;
+      text-align: center;
+      color: var(--primary-color);
+    }
   </style>
 </head>
 <body>
+
+  <!-- Overlay para el drag & drop -->
+  <div id="overlay"></div>
+
+  <!-- Formulario para subir el PDF -->
   <form id="pdfForm">
     <h2>Subir PDF del albarán</h2>
-
     <label for="pdfFile" class="custom-file-upload" id="dropArea">
       Haz clic o arrastra tu PDF aquí
     </label>
     <input type="file" id="pdfFile" accept="application/pdf" />
-
     <button type="submit">Subir</button>
   </form>
+
+  <!-- Mensaje de éxito con opción para subir otro PDF -->
+  <div id="successMessage">
+    <h2>¡PDF subido correctamente!</h2>
+    <button id="uploadAnother">Subir otro PDF</button>
+  </div>
 
   <script>
     // Inicializamos el iframe de Trello
     const t = TrelloPowerUp.iframe();
 
+    // Elementos del DOM
     const pdfForm = document.getElementById('pdfForm');
     const pdfFileInput = document.getElementById('pdfFile');
     const dropArea = document.getElementById('dropArea');
+    const overlay = document.getElementById('overlay');
+    const successMessage = document.getElementById('successMessage');
+    const uploadAnother = document.getElementById('uploadAnother');
 
-    // Previene el comportamiento por defecto del navegador al arrastrar ficheros
-    // Esto ayuda a que el drop funcione dentro del iframe.
+    // Para evitar que el navegador abra el PDF en la ventana al arrastrar
     document.addEventListener('dragover', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -118,45 +167,54 @@
       e.stopPropagation();
     }, false);
 
-    // Cambia el estilo al arrastrar el archivo sobre la zona
+    // Al arrastrar el archivo sobre el área
     dropArea.addEventListener('dragenter', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      dropArea.classList.add('highlight');
+      overlay.classList.add('active');
     }, false);
 
     dropArea.addEventListener('dragover', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      dropArea.classList.add('highlight');
+      overlay.classList.add('active');
     }, false);
 
     dropArea.addEventListener('dragleave', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      dropArea.classList.remove('highlight');
+      overlay.classList.remove('active');
     }, false);
 
-    // Asigna el archivo arrastrado al input
+    // Al soltar el archivo
     dropArea.addEventListener('drop', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      dropArea.classList.remove('highlight');
-
+      overlay.classList.remove('active');
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         pdfFileInput.files = e.dataTransfer.files;
       }
     }, false);
 
-    // Envío del formulario
+    // Al enviar el formulario
     pdfForm.addEventListener('submit', function(e) {
       e.preventDefault();
       if (pdfFileInput.files.length === 0) {
         alert('Por favor, selecciona o arrastra un archivo PDF.');
         return;
       }
-      // Aquí añadiremos la lógica para subir el PDF a tu endpoint
-      t.closeModal('¡PDF subido correctamente!');
+      // En este punto podrías hacer la subida real a tu endpoint
+      // Simulamos que se sube correctamente:
+      pdfForm.style.display = 'none';
+      successMessage.style.display = 'flex';
+    });
+
+    // Botón para subir otro PDF
+    uploadAnother.addEventListener('click', function() {
+      // Reseteamos el formulario
+      pdfFileInput.value = "";
+      successMessage.style.display = 'none';
+      pdfForm.style.display = 'flex';
     });
   </script>
 </body>
