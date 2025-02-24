@@ -9,7 +9,7 @@
       --main-bg: linear-gradient(135deg, #f5af19, #f12711);
       --card-bg: rgba(255, 255, 255, 0.85);
       --text-color: #333;
-      --primary-color: #FF9F1C; /* Valor por defecto, se actualizará si el usuario cambia la configuración */
+      --primary-color: #FF9F1C; /* Valor por defecto; se actualizará si hay configuración */
     }
 
     body {
@@ -147,6 +147,7 @@
   <form id="pdfForm">
     <h2>Subir PDF del albarán</h2>
     <label for="pdfFile" class="custom-file-upload" id="dropArea">
+      <!-- Texto inicial; se actualizará según la configuración -->
       Haz clic o arrastra tu PDF aquí
     </label>
     <input type="file" id="pdfFile" accept="application/pdf" />
@@ -167,13 +168,32 @@
   <script>
     const t = TrelloPowerUp.iframe();
 
-    // Cargamos el color personalizado (si existe) y actualizamos la variable CSS
-    t.get('member', 'private', 'primaryColor')
-      .then(color => {
-        if (color) {
-          document.documentElement.style.setProperty('--primary-color', color);
-        }
-      });
+    // Actualizamos el color y textos personalizados
+    t.get('member', 'private', 'primaryColor').then(color => {
+      if (color) {
+        document.documentElement.style.setProperty('--primary-color', color);
+      }
+    });
+    t.get('member', 'private', 'dropAreaText').then(text => {
+      if (text) {
+        document.getElementById('dropArea').textContent = text;
+      }
+    });
+    // Guardamos el texto para cuando se arrastre
+    let dragText = "Suelte aquí su archivo";
+    t.get('member', 'private', 'dropTextOnDrag').then(text => {
+      if (text) {
+        dragText = text;
+      }
+    });
+    // Guardamos el texto de éxito
+    let successText = "¡PDF subido correctamente!";
+    t.get('member', 'private', 'successText').then(text => {
+      if (text) {
+        successText = text;
+        document.querySelector('#successMessage h2').textContent = successText;
+      }
+    });
 
     const pdfForm = document.getElementById('pdfForm');
     const pdfFileInput = document.getElementById('pdfFile');
@@ -194,12 +214,12 @@
       e.stopPropagation();
     }, false);
 
-    // Cuando se arrastra el archivo sobre el área
+    // Al arrastrar el archivo sobre el área
     dropArea.addEventListener('dragenter', (e) => {
       e.preventDefault();
       e.stopPropagation();
       overlay.classList.add('active');
-      dropArea.textContent = "Suelte aquí su archivo";
+      dropArea.textContent = dragText;
       dropArea.classList.add('highlight');
     }, false);
 
@@ -207,7 +227,7 @@
       e.preventDefault();
       e.stopPropagation();
       overlay.classList.add('active');
-      dropArea.textContent = "Suelte aquí su archivo";
+      dropArea.textContent = dragText;
       dropArea.classList.add('highlight');
     }, false);
 
@@ -215,7 +235,10 @@
       e.preventDefault();
       e.stopPropagation();
       overlay.classList.remove('active');
-      dropArea.textContent = "Haz clic o arrastra tu PDF aquí";
+      // Restauramos el texto inicial configurado
+      t.get('member', 'private', 'dropAreaText').then(text => {
+        dropArea.textContent = text || "Haz clic o arrastra tu PDF aquí";
+      });
       dropArea.classList.remove('highlight');
     }, false);
 
@@ -257,7 +280,9 @@
     // Botón para subir otro PDF (reinicia el proceso)
     uploadAnother.addEventListener('click', function() {
       pdfFileInput.value = "";
-      dropArea.textContent = "Haz clic o arrastra tu PDF aquí";
+      t.get('member', 'private', 'dropAreaText').then(text => {
+        dropArea.textContent = text || "Haz clic o arrastra tu PDF aquí";
+      });
       successMessage.style.display = 'none';
       pdfForm.style.display = 'flex';
     });
