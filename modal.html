@@ -9,7 +9,7 @@
       --main-bg: linear-gradient(135deg, #f5af19, #f12711);
       --card-bg: rgba(255, 255, 255, 0.85);
       --text-color: #333;
-      --primary-color: #FF9F1C;
+      --primary-color: #FF9F1C; /* Valor por defecto, se actualizará si el usuario cambia la configuración */
     }
 
     body {
@@ -167,6 +167,14 @@
   <script>
     const t = TrelloPowerUp.iframe();
 
+    // Cargamos el color personalizado (si existe) y actualizamos la variable CSS
+    t.get('member', 'private', 'primaryColor')
+      .then(color => {
+        if (color) {
+          document.documentElement.style.setProperty('--primary-color', color);
+        }
+      });
+
     const pdfForm = document.getElementById('pdfForm');
     const pdfFileInput = document.getElementById('pdfFile');
     const dropArea = document.getElementById('dropArea');
@@ -186,7 +194,7 @@
       e.stopPropagation();
     }, false);
 
-    // Cuando el archivo se arrastra sobre el área
+    // Cuando se arrastra el archivo sobre el área
     dropArea.addEventListener('dragenter', (e) => {
       e.preventDefault();
       e.stopPropagation();
