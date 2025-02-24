@@ -55,25 +55,28 @@
     .tab-content.active {
       display: block;
     }
+
+    /* Alineación horizontal de la etiqueta e input */
     .form-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 15px;
     }
     .form-group label {
-      display: block;
-      margin-bottom: 5px;
       font-weight: bold;
+      margin-right: 10px;
+      min-width: 200px; /* Ajusta a tu gusto */
     }
-    /* Para que el input color muestre un buen cuadradito */
     .form-group input[type="color"] {
       width: 50px;
       height: 40px;
       border: none;
       cursor: pointer;
-      padding: 0;
       background: none;
     }
     .form-group input[type="text"] {
-      width: 100%;
+      flex: 1;
       padding: 8px;
       box-sizing: border-box;
       border: 1px solid #ccc;
