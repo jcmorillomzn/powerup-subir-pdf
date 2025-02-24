@@ -6,10 +6,12 @@
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
   <style>
     :root {
-      --main-bg: linear-gradient(135deg, #f5af19, #f12711);
-      --modal-bg: rgba(255, 255, 255, 0.85); /* Fondo del modal; se actualizará desde configuración */
-      --text-color: #333;                    /* Color del texto; se actualizará desde configuración */
-      --primary-color: #FF9F1C;              /* Color primario; se actualizará desde configuración */
+      /* Valores por defecto, en caso de que no se haya configurado nada */
+      --main-bg: #f5af19;           /* Fondo detrás del modal */
+      --modal-bg: #ffffff;         /* Fondo del modal */
+      --text-color: #333333;       /* Color del texto */
+      --primary-color: #FF9F1C;    /* Color de títulos / highlights */
+      --button-color: #FF9F1C;     /* Color de los botones */
     }
 
     body {
@@ -20,7 +22,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: var(--main-bg);
+      background: var(--main-bg);  /* Aplica el color configurado */
       background-attachment: fixed;
       background-size: cover;
       position: relative;
@@ -86,7 +88,7 @@
     }
 
     button {
-      background-color: var(--primary-color);
+      background-color: var(--button-color);
       color: #fff;
       border: none;
       border-radius: 8px;
@@ -97,7 +99,7 @@
       transition: background-color 0.3s;
     }
     button:hover {
-      background-color: #e08d15;
+      filter: brightness(90%);
     }
 
     /* Barra de progreso */
@@ -112,7 +114,7 @@
     #progressBar {
       width: 0;
       height: 20px;
-      background-color: var(--primary-color);
+      background-color: var(--button-color);
       transition: width 2s linear;
     }
 
@@ -147,7 +149,7 @@
   <form id="pdfForm">
     <h2>Subir PDF del albarán</h2>
     <label for="pdfFile" class="custom-file-upload" id="dropArea">
-      <!-- Texto inicial personalizado -->
+      <!-- Texto inicial, lo leeremos de la config en el script -->
       Haz clic o arrastra tu PDF aquí
     </label>
     <input type="file" id="pdfFile" accept="application/pdf" />
@@ -168,10 +170,15 @@
   <script>
     const t = TrelloPowerUp.iframe();
 
-    // Actualizamos el color y textos personalizados
-    t.get('member', 'private', 'primaryColor').then(color => {
-      if (color) {
-        document.documentElement.style.setProperty('--primary-color', color);
+    // Cargamos TODOS los colores y textos configurados
+    t.get('member', 'private', 'mainBgColor').then(val => {
+      if (val) {
+        document.documentElement.style.setProperty('--main-bg', val);
+      }
+    });
+    t.get('member', 'private', 'primaryColor').then(val => {
+      if (val) {
+        document.documentElement.style.setProperty('--primary-color', val);
       }
     });
     t.get('member', 'private', 'modalBackground').then(val => {
@@ -184,19 +191,26 @@
         document.documentElement.style.setProperty('--text-color', val);
       }
     });
+    t.get('member', 'private', 'buttonColor').then(val => {
+      if (val) {
+        document.documentElement.style.setProperty('--button-color', val);
+      }
+    });
+
+    // Textos
     t.get('member', 'private', 'dropAreaText').then(text => {
       if (text) {
         document.getElementById('dropArea').textContent = text;
       }
     });
-    // Guardamos el texto para cuando se arrastre
+
     let dragText = "Suelte aquí su archivo";
     t.get('member', 'private', 'dropTextOnDrag').then(text => {
       if (text) {
         dragText = text;
       }
     });
-    // Guardamos el texto de éxito
+
     let successText = "¡PDF subido correctamente!";
     t.get('member', 'private', 'successText').then(text => {
       if (text) {
@@ -205,6 +219,7 @@
       }
     });
 
+    // Referencias
     const pdfForm = document.getElementById('pdfForm');
     const pdfFileInput = document.getElementById('pdfFile');
     const dropArea = document.getElementById('dropArea');
@@ -245,11 +260,11 @@
       e.preventDefault();
       e.stopPropagation();
       overlay.classList.remove('active');
+      dropArea.classList.remove('highlight');
       // Restauramos el texto inicial configurado
       t.get('member', 'private', 'dropAreaText').then(text => {
         dropArea.textContent = text || "Haz clic o arrastra tu PDF aquí";
       });
-      dropArea.classList.remove('highlight');
     }, false);
 
     // Al soltar el archivo, se actualiza el texto con el nombre del archivo
