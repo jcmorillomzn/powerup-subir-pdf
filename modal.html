@@ -5,46 +5,72 @@
   <title>Subir PDF</title>
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
   <style>
+    /* Variables CSS para que puedas cambiar colores con facilidad */
+    :root {
+      --main-bg: linear-gradient(135deg, #f5af19, #f12711); /* Degradado de fondo */
+      --card-bg: rgba(255, 255, 255, 0.85);                 /* Efecto "glass" */
+      --text-color: #333;                                   /* Color del texto */
+      --primary-color: #FF9F1C;                             /* Color principal (botones, títulos) */
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100%;
+      height: 100vh;
+      background: var(--main-bg);
+      background-attachment: fixed;
+      background-size: cover;
     }
-    h2 {
-      color: #FF9F1C;
-      text-align: center;
-    }
+
     form {
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      padding: 24px;
+      width: 90%;
+      max-width: 400px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
+      gap: 16px;
+      color: var(--text-color);
     }
+
+    h2 {
+      margin: 0;
+      text-align: center;
+      color: var(--primary-color);
+    }
+
     input[type="file"] {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      background-color: #FF9F1C;
-      border: none;
-      padding: 12px;
-      color: white;
-      font-weight: bold;
-      border-radius: 4px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: border-color 0.3s;
     }
+
+    input[type="file"]:hover {
+      border-color: var(--primary-color);
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
     button:hover {
       background-color: #e08d15;
     }
@@ -56,7 +82,11 @@
     <input type="file" id="pdfFile" accept="application/pdf" />
     <button type="submit">Subir</button>
   </form>
+
   <script>
+    // Inicializamos el iframe de Trello
+    const t = TrelloPowerUp.iframe();
+
     document.getElementById('pdfForm').addEventListener('submit', function(e) {
       e.preventDefault();
       var fileInput = document.getElementById('pdfFile');
@@ -64,8 +94,8 @@
         alert('Por favor, selecciona un archivo PDF.');
         return;
       }
-      // Aquí más adelante podrás añadir la lógica para enviar el PDF a tu endpoint.
-      TrelloPowerUp.iframe().closeModal('¡PDF subido correctamente!');
+      // En el futuro añadiremos la lógica para enviar el PDF a tu endpoint
+      t.closeModal('¡PDF subido correctamente!');
     });
   </script>
 </body>
