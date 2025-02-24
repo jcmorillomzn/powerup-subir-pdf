@@ -12,18 +12,24 @@
     }
     h2 {
       color: #333;
+      margin-bottom: 20px;
+    }
+    .config-section {
+      margin-bottom: 20px;
     }
     label {
       display: block;
-      margin: 10px 0 5px;
+      margin-bottom: 5px;
+      font-weight: bold;
     }
     input[type="color"],
     input[type="text"] {
-      padding: 5px;
-      margin-bottom: 15px;
+      padding: 8px;
+      margin-bottom: 10px;
       border: 1px solid #ccc;
       border-radius: 4px;
       width: 100%;
+      box-sizing: border-box;
     }
     button {
       background-color: #FF9F1C;
@@ -34,51 +40,82 @@
       border-radius: 4px;
       font-size: 16px;
     }
+    button:hover {
+      background-color: #e08d15;
+    }
   </style>
 </head>
 <body>
   <h2>Personaliza tu Power-Up</h2>
   
-  <label for="colorPicker">Color primario:</label>
-  <input type="color" id="colorPicker" value="#FF9F1C">
+  <div class="config-section">
+    <label for="primaryColor">Color Primario:</label>
+    <input type="color" id="primaryColor" value="#FF9F1C">
+  </div>
   
-  <label for="dropAreaText">Texto del área de drop (por defecto):</label>
-  <input type="text" id="dropAreaText" value="Haz clic o arrastra tu PDF aquí">
+  <div class="config-section">
+    <label for="modalBackground">Fondo del Modal:</label>
+    <input type="color" id="modalBackground" value="#ffffff">
+  </div>
   
-  <label for="dropTextOnDrag">Texto al arrastrar el archivo:</label>
-  <input type="text" id="dropTextOnDrag" value="Suelte aquí su archivo">
+  <div class="config-section">
+    <label for="textColor">Color del Texto:</label>
+    <input type="color" id="textColor" value="#333333">
+  </div>
   
-  <label for="successText">Texto de éxito:</label>
-  <input type="text" id="successText" value="¡PDF subido correctamente!">
+  <div class="config-section">
+    <label for="dropAreaText">Texto del Área de Drop:</label>
+    <input type="text" id="dropAreaText" value="Haz clic o arrastra tu PDF aquí">
+  </div>
   
-  <button id="saveBtn">Guardar configuración</button>
+  <div class="config-section">
+    <label for="dropTextOnDrag">Texto al Arrastrar el Archivo:</label>
+    <input type="text" id="dropTextOnDrag" value="Suelte aquí su archivo">
+  </div>
+  
+  <div class="config-section">
+    <label for="successText">Texto de Éxito:</label>
+    <input type="text" id="successText" value="¡PDF subido correctamente!">
+  </div>
+  
+  <button id="saveBtn">Guardar Configuración</button>
 
   <script>
     const t = TrelloPowerUp.iframe();
 
     // Al cargar, recuperamos los valores almacenados (si existen)
-    t.get('member', 'private', 'primaryColor').then(color => {
-      if(color) document.getElementById('colorPicker').value = color;
+    t.get('member', 'private', 'primaryColor').then(val => {
+      if(val) document.getElementById('primaryColor').value = val;
     });
-    t.get('member', 'private', 'dropAreaText').then(text => {
-      if(text) document.getElementById('dropAreaText').value = text;
+    t.get('member', 'private', 'modalBackground').then(val => {
+      if(val) document.getElementById('modalBackground').value = val;
     });
-    t.get('member', 'private', 'dropTextOnDrag').then(text => {
-      if(text) document.getElementById('dropTextOnDrag').value = text;
+    t.get('member', 'private', 'textColor').then(val => {
+      if(val) document.getElementById('textColor').value = val;
     });
-    t.get('member', 'private', 'successText').then(text => {
-      if(text) document.getElementById('successText').value = text;
+    t.get('member', 'private', 'dropAreaText').then(val => {
+      if(val) document.getElementById('dropAreaText').value = val;
+    });
+    t.get('member', 'private', 'dropTextOnDrag').then(val => {
+      if(val) document.getElementById('dropTextOnDrag').value = val;
+    });
+    t.get('member', 'private', 'successText').then(val => {
+      if(val) document.getElementById('successText').value = val;
     });
 
     // Guardamos todos los valores al hacer clic en "Guardar"
     document.getElementById('saveBtn').addEventListener('click', () => {
-      const primaryColor = document.getElementById('colorPicker').value;
+      const primaryColor = document.getElementById('primaryColor').value;
+      const modalBackground = document.getElementById('modalBackground').value;
+      const textColor = document.getElementById('textColor').value;
       const dropAreaText = document.getElementById('dropAreaText').value;
       const dropTextOnDrag = document.getElementById('dropTextOnDrag').value;
       const successText = document.getElementById('successText').value;
-      
+
       Promise.all([
         t.set('member', 'private', 'primaryColor', primaryColor),
+        t.set('member', 'private', 'modalBackground', modalBackground),
+        t.set('member', 'private', 'textColor', textColor),
         t.set('member', 'private', 'dropAreaText', dropAreaText),
         t.set('member', 'private', 'dropTextOnDrag', dropTextOnDrag),
         t.set('member', 'private', 'successText', successText)
