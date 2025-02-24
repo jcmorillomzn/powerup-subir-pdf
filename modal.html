@@ -140,7 +140,7 @@
       color: var(--primary-color);
     }
 
-    /* Lista de adjuntos */
+    /* Contenedor de adjuntos */
     #attachmentContainer {
       display: none;
       margin-top: 10px;
@@ -149,30 +149,44 @@
       display: block;
       margin-bottom: 5px;
     }
+
+    /* Cada adjunto: nombre + botón "Descargar" */
     .attachment-item {
-      cursor: pointer;
-      padding: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       border: 1px solid #ccc;
       border-radius: 4px;
       margin-top: 5px;
+      padding: 6px;
     }
     .attachment-item.selected {
       background-color: #e0e0e0;
     }
-
-    /* Contenedor y estilos para la vista previa */
-    #previewContainer {
-      display: none; /* Oculto por defecto */
-      margin-top: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      overflow: hidden;
-      height: 300px; /* Ajusta la altura a tu gusto */
+    .attachment-name {
+      flex: 1;
+      cursor: pointer;
+      margin-right: 8px;
     }
-    #pdfPreview {
-      width: 100%;
-      height: 100%;
-      border: none;
+
+    /* Enlace/ botón para descargar */
+    .download-link {
+      background-color: var(--button-color);
+      color: #fff;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .download-link:hover {
+      filter: brightness(90%);
+    }
+    .download-link img {
+      width: 16px;
+      height: 16px;
     }
   </style>
 </head>
@@ -192,11 +206,6 @@
     <div id="attachmentContainer">
       <strong>o elige uno de tus adjuntos:</strong>
       <div id="attachmentList"></div>
-    </div>
-
-    <!-- Contenedor para la vista previa del PDF -->
-    <div id="previewContainer">
-      <iframe id="pdfPreview"></iframe>
     </div>
 
     <button type="submit">Subir</button>
@@ -228,11 +237,7 @@
     const attachmentContainer = document.getElementById('attachmentContainer');
     const attachmentList = document.getElementById('attachmentList');
 
-    // Vista previa
-    const previewContainer = document.getElementById('previewContainer');
-    const pdfPreview = document.getElementById('pdfPreview');
-
-    // Cargamos los colores y textos configurados
+    // Cargar colores y textos configurados
     t.get('member', 'private', 'mainBgColor').then(val => {
       if (val) document.documentElement.style.setProperty('--main-bg', val);
     });
@@ -252,7 +257,7 @@
       if (text) dropArea.textContent = text;
     });
 
-    // Arrastrar y soltar
+    // Drag & Drop
     document.addEventListener('dragover', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -299,9 +304,6 @@
         // Limpia la selección previa de adjunto
         selectedAttachmentURL = null;
         document.querySelectorAll('.attachment-item').forEach(item => item.classList.remove('selected'));
-
-        // Mostramos vista previa si es posible
-        showLocalFilePreview(pdfFileInput.files[0]);
       }
     }, false);
 
@@ -312,85 +314,78 @@
         // Limpia la selección previa de adjunto
         selectedAttachmentURL = null;
         document.querySelectorAll('.attachment-item').forEach(item => item.classList.remove('selected'));
-
-        // Mostramos vista previa del archivo local
-        showLocalFilePreview(pdfFileInput.files[0]);
       }
     });
 
-    // Función para vista previa de un archivo local
-    function showLocalFilePreview(file) {
-      // Si es PDF, intentamos mostrarlo en el iframe usando Data URL
-      if (file.type === 'application/pdf') {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          pdfPreview.src = e.target.result;
-          previewContainer.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      } else {
-        pdfPreview.src = '';
-        previewContainer.style.display = 'none';
-      }
-    }
-
-    // Cargar adjuntos de la tarjeta Trello
+    // Cargar adjuntos de la tarjeta
     t.card('attachments').then(function(card) {
       const attachments = card.attachments;
       if (attachments && attachments.length > 0) {
         attachmentContainer.style.display = 'block';
         attachments.forEach(att => {
           const attElem = document.createElement('div');
-          attElem.textContent = att.name;
           attElem.className = 'attachment-item';
-          attElem.onclick = function() {
+
+          // Nombre (clicable para "seleccionar" este adjunto)
+          const attName = document.createElement('span');
+          attName.className = 'attachment-name';
+          attName.textContent = att.name;
+          attName.onclick = function() {
             dropArea.textContent = att.name;
             selectedAttachmentURL = att.url;
-            // Desmarcar los otros
             document.querySelectorAll('.attachment-item').forEach(item => item.classList.remove('selected'));
             attElem.classList.add('selected');
-
-            // Intentar mostrar vista previa en el iframe
-            showAttachmentPreview(att.url);
-            // Limpiamos cualquier archivo local seleccionado
+            // Limpiamos cualquier archivo local
             pdfFileInput.value = "";
           };
+
+          // Botón "Descargar"
+          const downloadLink = document.createElement('a');
+          downloadLink.className = 'download-link';
+          downloadLink.href = att.url;
+          downloadLink.target = '_blank';
+          downloadLink.textContent = 'Descargar';
+
+          // (Opcional) Añadir icono de descarga
+          const icon = document.createElement('img');
+          icon.src = 'https://cdn-icons-png.flaticon.com/512/724/724933.png'; 
+          downloadLink.prepend(icon);
+
+          // Añadimos ambos al elemento
+          attElem.appendChild(attName);
+          attElem.appendChild(downloadLink);
+
           attachmentList.appendChild(attElem);
         });
       }
     });
 
-    // Función para vista previa de un adjunto (URL)
-    function showAttachmentPreview(url) {
-      // Asignamos directamente la URL al iframe
-      // Si la URL es pública, se verá; si no, puede que bloquee por permisos
-      pdfPreview.src = url;
-      previewContainer.style.display = 'block';
-    }
-
     // Al enviar el formulario
     pdfForm.addEventListener('submit', function(e) {
       e.preventDefault();
+      // Si no hay archivo local ni adjunto seleccionado
       if (pdfFileInput.files.length === 0 && !selectedAttachmentURL) {
         alert('Por favor, selecciona o arrastra un archivo PDF o elige un adjunto.');
         return;
       }
 
-      // Aquí harías la subida real al servidor o a Make
+      // Ejemplo de subida (simulada)
       /*
       const formData = new FormData();
       if (pdfFileInput.files.length > 0) {
         formData.append('file', pdfFileInput.files[0], pdfFileInput.files[0].name);
-      } else if (selectedAttachmentURL) {
+      } else {
         formData.append('attachmentUrl', selectedAttachmentURL);
       }
       fetch('https://tu-webhook-o-endpoint', {
         method: 'POST',
         body: formData
-      }).then(...)
+      })
+      .then(...)
+      .catch(...);
       */
 
-      // Simulación de barra de progreso
+      // Barra de progreso simulada
       pdfForm.style.display = 'none';
       progressContainer.style.display = 'block';
       progressBar.style.width = '0';
@@ -409,8 +404,6 @@
       selectedAttachmentURL = null;
       pdfForm.style.display = 'flex';
       successMessage.style.display = 'none';
-      previewContainer.style.display = 'none';
-      pdfPreview.src = '';
 
       t.get('member', 'private', 'dropAreaText').then(text => {
         dropArea.textContent = text || "Haz clic o arrastra tu PDF aquí";
