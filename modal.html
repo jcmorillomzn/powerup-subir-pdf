@@ -150,7 +150,7 @@
       margin-bottom: 5px;
     }
 
-    /* Cada adjunto: nombre + botón "Descargar" */
+    /* Cada adjunto: nombre + botón (solo icono) */
     .attachment-item {
       display: flex;
       align-items: center;
@@ -169,17 +169,17 @@
       margin-right: 8px;
     }
 
-    /* Enlace/ botón para descargar */
+    /* Enlace con icono de descarga (sin texto) */
     .download-link {
       background-color: var(--button-color);
       color: #fff;
       text-decoration: none;
-      padding: 6px 12px;
+      padding: 6px;
       border-radius: 4px;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
     }
     .download-link:hover {
       filter: brightness(90%);
@@ -339,17 +339,16 @@
             pdfFileInput.value = "";
           };
 
-          // Botón "Descargar"
+          // Botón icono "descarga" sin texto
           const downloadLink = document.createElement('a');
           downloadLink.className = 'download-link';
           downloadLink.href = att.url;
           downloadLink.target = '_blank';
-          downloadLink.textContent = 'Descargar';
 
-          // (Opcional) Añadir icono de descarga
+          // Icono
           const icon = document.createElement('img');
-          icon.src = 'https://cdn-icons-png.flaticon.com/512/724/724933.png'; 
-          downloadLink.prepend(icon);
+          icon.src = 'https://cdn-icons-png.flaticon.com/512/724/724933.png';
+          downloadLink.appendChild(icon);
 
           // Añadimos ambos al elemento
           attElem.appendChild(attName);
