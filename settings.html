@@ -5,7 +5,7 @@
   <title>Configuración del Power-Up</title>
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
   <style>
-    /* Estilos modernos para la configuración */
+    /* Estilos más grandes y modernos, con pestañas */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
@@ -14,7 +14,7 @@
       color: #333;
     }
     .container {
-      max-width: 400px;
+      max-width: 600px;
       margin: auto;
       background: #fff;
       border-radius: 8px;
@@ -23,7 +23,7 @@
     }
     .header {
       background: #FF9F1C;
-      padding: 10px;
+      padding: 12px;
       text-align: center;
       color: #fff;
       font-size: 20px;
@@ -35,7 +35,7 @@
     }
     .tabs button {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       background: #f9f9f9;
       border: none;
       border-bottom: 2px solid transparent;
@@ -73,7 +73,7 @@
     }
     .save-button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       background: #FF9F1C;
       color: #fff;
       border: none;
@@ -96,8 +96,17 @@
       <button id="tab-textos">Textos</button>
     </div>
     <div id="content-colores" class="tab-content active">
+      <!-- Sección Colores -->
       <div class="form-group">
-        <label for="primaryColor">Color Primario:</label>
+        <label for="mainBgColor">Fondo General (detrás del modal):</label>
+        <input type="color" id="mainBgColor" value="#f5af19">
+      </div>
+      <div class="form-group">
+        <label for="topBarColor">Color Barra Superior (título modal):</label>
+        <input type="color" id="topBarColor" value="#FF9F1C">
+      </div>
+      <div class="form-group">
+        <label for="primaryColor">Color Primario (títulos, highlights):</label>
         <input type="color" id="primaryColor" value="#FF9F1C">
       </div>
       <div class="form-group">
@@ -114,6 +123,7 @@
       </div>
     </div>
     <div id="content-textos" class="tab-content">
+      <!-- Sección Textos -->
       <div class="form-group">
         <label for="dropAreaText">Texto del Área de Drop:</label>
         <input type="text" id="dropAreaText" value="Haz clic o arrastra tu PDF aquí">
@@ -133,7 +143,7 @@
   <script>
     const t = TrelloPowerUp.iframe();
 
-    // Función para cambiar entre pestañas
+    // Tabs
     const tabColores = document.getElementById('tab-colores');
     const tabTextos = document.getElementById('tab-textos');
     const contentColores = document.getElementById('content-colores');
@@ -154,6 +164,12 @@
     });
 
     // Recuperar los valores almacenados
+    t.get('member', 'private', 'mainBgColor').then(val => {
+      if(val) document.getElementById('mainBgColor').value = val;
+    });
+    t.get('member', 'private', 'topBarColor').then(val => {
+      if(val) document.getElementById('topBarColor').value = val;
+    });
     t.get('member', 'private', 'primaryColor').then(val => {
       if(val) document.getElementById('primaryColor').value = val;
     });
@@ -178,6 +194,8 @@
 
     // Guardar los valores al pulsar "Guardar Configuración"
     document.getElementById('saveBtn').addEventListener('click', () => {
+      const mainBgColor = document.getElementById('mainBgColor').value;
+      const topBarColor = document.getElementById('topBarColor').value;
       const primaryColor = document.getElementById('primaryColor').value;
       const modalBackground = document.getElementById('modalBackground').value;
       const textColor = document.getElementById('textColor').value;
@@ -187,6 +205,8 @@
       const successText = document.getElementById('successText').value;
 
       Promise.all([
+        t.set('member', 'private', 'mainBgColor', mainBgColor),
+        t.set('member', 'private', 'topBarColor', topBarColor),
         t.set('member', 'private', 'primaryColor', primaryColor),
         t.set('member', 'private', 'modalBackground', modalBackground),
         t.set('member', 'private', 'textColor', textColor),
@@ -195,7 +215,7 @@
         t.set('member', 'private', 'dropTextOnDrag', dropTextOnDrag),
         t.set('member', 'private', 'successText', successText)
       ]).then(() => {
-        t.closePopup();
+        t.closeModal();
       });
     });
   </script>
