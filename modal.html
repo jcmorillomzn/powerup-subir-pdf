@@ -23,10 +23,10 @@
       background: var(--main-bg);
       background-attachment: fixed;
       background-size: cover;
-      position: relative; /* Para colocar el overlay */
+      position: relative;
     }
 
-    /* Overlay blanco con transparencia */
+    /* Overlay blanco semitransparente para el drag & drop */
     #overlay {
       position: absolute;
       top: 0;
@@ -34,14 +34,13 @@
       right: 0;
       bottom: 0;
       background: rgba(255, 255, 255, 0.5);
-      display: none; /* Oculto por defecto */
-      z-index: 999;  /* Por encima del contenido */
+      display: none;
+      z-index: 999;
     }
     #overlay.active {
       display: block;
     }
 
-    /* Contenedor del formulario */
     form {
       background: var(--card-bg);
       backdrop-filter: blur(8px);
@@ -54,7 +53,7 @@
       flex-direction: column;
       gap: 16px;
       color: var(--text-color);
-      z-index: 1000; /* Por encima del overlay */
+      z-index: 1000;
     }
 
     h2 {
@@ -74,13 +73,16 @@
       padding: 20px;
       text-align: center;
       cursor: pointer;
-      transition: border-color 0.3s;
+      transition: border-color 0.3s, background-color 0.3s;
       background-color: #fff;
       color: var(--text-color);
     }
-
     .custom-file-upload:hover {
       border-color: var(--primary-color);
+    }
+    .highlight {
+      border-color: var(--primary-color) !important;
+      background-color: rgba(255, 255, 255, 0.8);
     }
 
     button {
@@ -94,12 +96,27 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
-
     button:hover {
       background-color: #e08d15;
     }
 
-    /* Mensaje de éxito (oculto inicialmente) */
+    /* Barra de progreso */
+    #progressContainer {
+      display: none;
+      width: 100%;
+      background-color: #eee;
+      border-radius: 8px;
+      overflow: hidden;
+      z-index: 1000;
+    }
+    #progressBar {
+      width: 0;
+      height: 20px;
+      background-color: var(--primary-color);
+      transition: width 2s linear;
+    }
+
+    /* Mensaje de éxito */
     #successMessage {
       display: none;
       flex-direction: column;
@@ -115,7 +132,6 @@
       max-width: 400px;
       z-index: 1000;
     }
-
     #successMessage h2 {
       margin: 0;
       text-align: center;
@@ -124,8 +140,7 @@
   </style>
 </head>
 <body>
-
-  <!-- Overlay para el drag & drop -->
+  <!-- Overlay para el efecto al arrastrar -->
   <div id="overlay"></div>
 
   <!-- Formulario para subir el PDF -->
@@ -138,81 +153,103 @@
     <button type="submit">Subir</button>
   </form>
 
-  <!-- Mensaje de éxito con opción para subir otro PDF -->
+  <!-- Barra de progreso -->
+  <div id="progressContainer">
+    <div id="progressBar"></div>
+  </div>
+
+  <!-- Mensaje de éxito y botón para subir otro PDF -->
   <div id="successMessage">
     <h2>¡PDF subido correctamente!</h2>
     <button id="uploadAnother">Subir otro PDF</button>
   </div>
 
   <script>
-    // Inicializamos el iframe de Trello
     const t = TrelloPowerUp.iframe();
 
-    // Elementos del DOM
     const pdfForm = document.getElementById('pdfForm');
     const pdfFileInput = document.getElementById('pdfFile');
     const dropArea = document.getElementById('dropArea');
     const overlay = document.getElementById('overlay');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
     const successMessage = document.getElementById('successMessage');
     const uploadAnother = document.getElementById('uploadAnother');
 
-    // Para evitar que el navegador abra el PDF en la ventana al arrastrar
+    // Evitar que el navegador abra el PDF al arrastrar y soltar
     document.addEventListener('dragover', (e) => {
       e.preventDefault();
       e.stopPropagation();
     }, false);
-
     document.addEventListener('drop', (e) => {
       e.preventDefault();
       e.stopPropagation();
     }, false);
 
-    // Al arrastrar el archivo sobre el área
+    // Cuando el archivo se arrastra sobre el área
     dropArea.addEventListener('dragenter', (e) => {
       e.preventDefault();
       e.stopPropagation();
       overlay.classList.add('active');
+      dropArea.textContent = "Suelte aquí su archivo";
+      dropArea.classList.add('highlight');
     }, false);
 
     dropArea.addEventListener('dragover', (e) => {
       e.preventDefault();
       e.stopPropagation();
       overlay.classList.add('active');
+      dropArea.textContent = "Suelte aquí su archivo";
+      dropArea.classList.add('highlight');
     }, false);
 
     dropArea.addEventListener('dragleave', (e) => {
       e.preventDefault();
       e.stopPropagation();
       overlay.classList.remove('active');
+      dropArea.textContent = "Haz clic o arrastra tu PDF aquí";
+      dropArea.classList.remove('highlight');
     }, false);
 
-    // Al soltar el archivo
+    // Al soltar el archivo, se actualiza el texto con el nombre del archivo
     dropArea.addEventListener('drop', (e) => {
       e.preventDefault();
       e.stopPropagation();
       overlay.classList.remove('active');
+      dropArea.classList.remove('highlight');
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         pdfFileInput.files = e.dataTransfer.files;
+        dropArea.textContent = e.dataTransfer.files[0].name;
       }
     }, false);
 
-    // Al enviar el formulario
+    // Al enviar el formulario, mostramos la barra de progreso simulada
     pdfForm.addEventListener('submit', function(e) {
       e.preventDefault();
       if (pdfFileInput.files.length === 0) {
         alert('Por favor, selecciona o arrastra un archivo PDF.');
         return;
       }
-      // En este punto podrías hacer la subida real a tu endpoint
-      // Simulamos que se sube correctamente:
+      // Ocultamos el formulario y mostramos la barra de progreso
       pdfForm.style.display = 'none';
-      successMessage.style.display = 'flex';
+      progressContainer.style.display = 'block';
+      progressBar.style.width = '0';
+      // Forzamos reflow para reiniciar la animación
+      void progressBar.offsetWidth;
+      // Animamos la barra hasta el 100% en 2 segundos
+      progressBar.style.width = '100%';
+
+      // Tras 2 segundos, ocultamos la barra y mostramos el mensaje de éxito
+      setTimeout(() => {
+        progressContainer.style.display = 'none';
+        successMessage.style.display = 'flex';
+      }, 2000);
     });
 
-    // Botón para subir otro PDF
+    // Botón para subir otro PDF (reinicia el proceso)
     uploadAnother.addEventListener('click', function() {
-      // Reseteamos el formulario
       pdfFileInput.value = "";
+      dropArea.textContent = "Haz clic o arrastra tu PDF aquí";
       successMessage.style.display = 'none';
       pdfForm.style.display = 'flex';
     });
