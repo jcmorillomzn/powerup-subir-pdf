@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Configuración de Color</title>
+  <title>Configuración de Power-Up</title>
   <script src="https://p.trellocdn.com/power-up.min.js"></script>
   <style>
     body {
@@ -15,13 +15,15 @@
     }
     label {
       display: block;
-      margin-bottom: 10px;
+      margin: 10px 0 5px;
     }
-    input[type="color"] {
+    input[type="color"],
+    input[type="text"] {
       padding: 5px;
-      margin-bottom: 20px;
-      border: none;
-      background: transparent;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
     }
     button {
       background-color: #FF9F1C;
@@ -35,28 +37,54 @@
   </style>
 </head>
 <body>
-  <h2>Personaliza el color</h2>
-  <label for="colorPicker">Elige tu color primario:</label>
-  <input type="color" id="colorPicker" name="colorPicker" value="#FF9F1C">
-  <br>
-  <button id="saveBtn">Guardar</button>
+  <h2>Personaliza tu Power-Up</h2>
+  
+  <label for="colorPicker">Color primario:</label>
+  <input type="color" id="colorPicker" value="#FF9F1C">
+  
+  <label for="dropAreaText">Texto del área de drop (por defecto):</label>
+  <input type="text" id="dropAreaText" value="Haz clic o arrastra tu PDF aquí">
+  
+  <label for="dropTextOnDrag">Texto al arrastrar el archivo:</label>
+  <input type="text" id="dropTextOnDrag" value="Suelte aquí su archivo">
+  
+  <label for="successText">Texto de éxito:</label>
+  <input type="text" id="successText" value="¡PDF subido correctamente!">
+  
+  <button id="saveBtn">Guardar configuración</button>
 
   <script>
     const t = TrelloPowerUp.iframe();
-    // Al cargar, obtenemos el color almacenado (si lo hay)
-    t.get('member', 'private', 'primaryColor')
-      .then(color => {
-        if(color) {
-          document.getElementById('colorPicker').value = color;
-        }
-      });
 
+    // Al cargar, recuperamos los valores almacenados (si existen)
+    t.get('member', 'private', 'primaryColor').then(color => {
+      if(color) document.getElementById('colorPicker').value = color;
+    });
+    t.get('member', 'private', 'dropAreaText').then(text => {
+      if(text) document.getElementById('dropAreaText').value = text;
+    });
+    t.get('member', 'private', 'dropTextOnDrag').then(text => {
+      if(text) document.getElementById('dropTextOnDrag').value = text;
+    });
+    t.get('member', 'private', 'successText').then(text => {
+      if(text) document.getElementById('successText').value = text;
+    });
+
+    // Guardamos todos los valores al hacer clic en "Guardar"
     document.getElementById('saveBtn').addEventListener('click', () => {
-      const selectedColor = document.getElementById('colorPicker').value;
-      t.set('member', 'private', 'primaryColor', selectedColor)
-        .then(() => {
-          t.closePopup();
-        });
+      const primaryColor = document.getElementById('colorPicker').value;
+      const dropAreaText = document.getElementById('dropAreaText').value;
+      const dropTextOnDrag = document.getElementById('dropTextOnDrag').value;
+      const successText = document.getElementById('successText').value;
+      
+      Promise.all([
+        t.set('member', 'private', 'primaryColor', primaryColor),
+        t.set('member', 'private', 'dropAreaText', dropAreaText),
+        t.set('member', 'private', 'dropTextOnDrag', dropTextOnDrag),
+        t.set('member', 'private', 'successText', successText)
+      ]).then(() => {
+        t.closePopup();
+      });
     });
   </script>
 </body>
